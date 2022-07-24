@@ -1,0 +1,3 @@
+0 seguro
+1 celular
+2 radio
