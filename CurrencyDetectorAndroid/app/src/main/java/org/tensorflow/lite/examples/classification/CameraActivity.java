@@ -22,6 +22,7 @@ import android.Manifest;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -61,7 +62,6 @@ import android.widget.Toast;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.tensorflow.lite.examples.classification.env.ImageUtils;
 import org.tensorflow.lite.examples.classification.env.Logger;
@@ -381,24 +381,6 @@ public abstract class CameraActivity extends AppCompatActivity
     mp1 = MediaPlayer.create(this, R.raw.ten);
     mp2 = MediaPlayer.create(this, R.raw.five);
 
- /*   mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-      @Override
-      public void onCompletion(MediaPlayer mp) {
-        mp.release();
-      }
-    });
-    mp1.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-      @Override
-      public void onCompletion(MediaPlayer mp) {
-        mp.release();
-      }
-    });
-    mp2.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-      @Override
-      public void onCompletion(MediaPlayer mp) {
-        mp.release();
-      }
-    });*/
   }
 
   @Override
@@ -481,17 +463,25 @@ public abstract class CameraActivity extends AppCompatActivity
 
   public void onLocationChanged(Location location) {
     // New location has now been determined
-    String msg = "Updated Location\n" +
-            "Latitude: " +
-            Double.toString(location.getLatitude()) + "\n" +
-            "Longitude: " +
-            Double.toString(location.getLongitude())+"\n"+
-            "Speed"+
-            Double.toString(Math.round(location.getSpeed()*100.0)/100.0)+"\n"+
-            "Acrraccy"+
-            Double.toString(location.getAccuracy());
+    float velocidad;
 
+    if(location.hasSpeed()){
+      velocidad = location.getSpeed();
+    }else{
+      velocidad = 0.0f;
+    }
+
+    String msg = Double.toString(location.getLatitude()) + ", " +
+            Double.toString(location.getLongitude())+"\n"+
+            "Velocidad"+
+            Double.toString(Math.round(velocidad*100.0)/100.0)+"\n"+
+            "Clase: "+clase;
     locationText.setText(msg);
+    if(clase != "0 seguro" && velocidad > 2){
+      locationText.setTextColor(Color.RED);
+    }else{
+      locationText.setTextColor(Color.WHITE);
+    }
   }
 
 
@@ -576,9 +566,6 @@ public abstract class CameraActivity extends AppCompatActivity
           continue;
         }
 
-        // Fallback to camera1 API for internal cameras that don't have full support.
-        // This should help with legacy situations where using the camera2 API causes
-        // distorted or otherwise broken previews.
         useCamera2API =
             (facing == CameraCharacteristics.LENS_FACING_EXTERNAL)
                 || isHardwareLevelSupported(
@@ -656,33 +643,26 @@ public abstract class CameraActivity extends AppCompatActivity
 boolean hun = false;
   boolean five = false;
   boolean ten = false;
+  String clase = "";
   @UiThread
   protected void showResultsInBottomSheet(List<Recognition> results) {
 
     if (results != null && results.size() >= 3) {
       Recognition recognition = results.get(0);
       if (recognition != null) {
-        if (recognition.getTitle() != null) recognitionTextView.setText(recognition.getTitle());
+        if (recognition.getTitle() != null){
+
+          recognitionTextView.setText(recognition.getTitle());
+        }
         if (recognition.getConfidence() != null)
           recognitionValueTextView.setText(
                   String.format("%.2f", (100 * recognition.getConfidence())) + "%");
         float confi = 100 * recognition.getConfidence();
+
+
         try {
-          if (!five && recognitionTextView.getText().toString().equalsIgnoreCase("500") && confi>99 ) {
-            mp2.start();
-            five =true;
-            ten = false;
-            hun = false;
-          } else if (!hun&& recognitionTextView.getText().toString().equalsIgnoreCase("100")&& confi>99) {
-            mp.start();
-            hun = true;
-            five =false;
-            ten = false;
-          } else if (!ten&&recognitionTextView.getText().toString().equalsIgnoreCase("10")&& confi>90 ) {
-            mp1.start();
-            ten  =true;
-            five =false;
-            hun = false;
+          if (confi>70 ) {
+            clase = recognition.getTitle();
           }
         }catch (Exception e){
           e.printStackTrace();

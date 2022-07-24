@@ -1,3 +1,6 @@
 0 seguro
 1 celular
-2 radio
+2 llamada
+3 radio
+4 bebiendo
+5 mirar_otro_lado
