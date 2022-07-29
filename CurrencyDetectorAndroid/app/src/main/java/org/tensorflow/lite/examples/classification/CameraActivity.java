@@ -122,7 +122,7 @@ public abstract class CameraActivity extends AppCompatActivity
   private Model model = Model.FLOAT;
   private Device device = Device.CPU;
   private int numThreads = -1;
-   MediaPlayer mp,mp1,mp2;
+  MediaPlayer mp,mp1,mp2, alarma_larga, alarma_corta;
    //maps
    public static final int RequestPermissionCode = 1;
   private GoogleApiClient mGoogleApiClient;
@@ -381,6 +381,10 @@ public abstract class CameraActivity extends AppCompatActivity
     mp1 = MediaPlayer.create(this, R.raw.ten);
     mp2 = MediaPlayer.create(this, R.raw.five);
 
+    alarma_corta = MediaPlayer.create(this, R.raw.alarma_corta);
+    alarma_larga = MediaPlayer.create(this, R.raw.alarma_larga);
+
+
   }
 
   @Override
@@ -460,26 +464,43 @@ public abstract class CameraActivity extends AppCompatActivity
   public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     Log.e("MainActivity", "This is onConnectionFailed()");
   }
-
+  boolean peligro = false;
   public void onLocationChanged(Location location) {
     // New location has now been determined
+    //variables
     float velocidad;
+    String mensaje = "";
+    String claseR = clase;
 
+    //siexiste velocidad
     if(location.hasSpeed()){
       velocidad = location.getSpeed();
     }else{
       velocidad = 0.0f;
     }
+    //si existe peligro
+    if(!clase.equals("0 seguro") && velocidad > 2){
+      peligro = true;
+      mensaje = "Peligro";
+    }
+    if(clase.equals("0 seguro")){
+      peligro = false;
+      mensaje = "No hay peligro";
+    }
 
+    //mensaje
     String msg = Double.toString(location.getLatitude()) + ", " +
             Double.toString(location.getLongitude())+"\n"+
-            "Velocidad"+
+            "Velocidad: "+
             Double.toString(Math.round(velocidad*100.0)/100.0)+"\n"+
-            "Clase: "+clase;
+            clase;
     locationText.setText(msg);
-    if(clase != "0 seguro" && velocidad > 2){
+
+    if(peligro){
       locationText.setTextColor(Color.RED);
+      alarma_corta.start();
     }else{
+//      alarma_corta.stop();
       locationText.setTextColor(Color.WHITE);
     }
   }
