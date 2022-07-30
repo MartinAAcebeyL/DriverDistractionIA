@@ -17,7 +17,7 @@
 package org.tensorflow.lite.examples.classification;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-
+import java.util.*;
 import android.Manifest;
 import android.app.Fragment;
 import android.content.Context;
@@ -472,20 +472,20 @@ public abstract class CameraActivity extends AppCompatActivity
     String mensaje = "";
     String claseR = clase;
 
-    //siexiste velocidad
+    //si existe velocidad
     if(location.hasSpeed()){
       velocidad = location.getSpeed();
     }else{
       velocidad = 0.0f;
     }
     //si existe peligro
-    if(!clase.equals("0 seguro") && velocidad > 2){
+    if(!clase.equals("0 seguro") && velocidad > 2 ){
       peligro = true;
-      mensaje = "Peligro";
+      mensaje = "Conduccion peligrosa";
     }
     if(clase.equals("0 seguro")){
       peligro = false;
-      mensaje = "No hay peligro";
+      mensaje = "Conduccion segura";
     }
 
     //mensaje
@@ -493,14 +493,14 @@ public abstract class CameraActivity extends AppCompatActivity
             Double.toString(location.getLongitude())+"\n"+
             "Velocidad: "+
             Double.toString(Math.round(velocidad*100.0)/100.0)+"\n"+
-            clase;
+            mensaje+"\n"+clase;
     locationText.setText(msg);
 
     if(peligro){
       locationText.setTextColor(Color.RED);
       alarma_corta.start();
     }else{
-//      alarma_corta.stop();
+      //alarma_corta.stop();
       locationText.setTextColor(Color.WHITE);
     }
   }
@@ -665,14 +665,19 @@ boolean hun = false;
   boolean five = false;
   boolean ten = false;
   String clase = "";
+
+  // Creamos el Array nombres
+  String [] inicio = {"0 seguro","0 seguro","0 seguro"};
+
+  // Mediante Arrays creamos una nueva lista
+  List<String> clases = Arrays.asList(inicio);
+
   @UiThread
   protected void showResultsInBottomSheet(List<Recognition> results) {
-
     if (results != null && results.size() >= 3) {
       Recognition recognition = results.get(0);
       if (recognition != null) {
         if (recognition.getTitle() != null){
-
           recognitionTextView.setText(recognition.getTitle());
         }
         if (recognition.getConfidence() != null)
@@ -684,7 +689,16 @@ boolean hun = false;
         try {
           if (confi>70 ) {
             clase = recognition.getTitle();
+            //clases.add(clase);
+            //clases.remove(0);
           }
+
+//          Set<String> miSet = new HashSet<String>(clases);
+//          for(String s: miSet){
+//            if(Collections.frequency(clases, s) >=2){
+//              clase = s;
+//            }
+//          }
         }catch (Exception e){
           e.printStackTrace();
         }
