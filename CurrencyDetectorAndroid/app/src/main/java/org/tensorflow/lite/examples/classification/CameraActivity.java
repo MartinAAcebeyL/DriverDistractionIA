@@ -482,8 +482,7 @@ public abstract class CameraActivity extends AppCompatActivity
     if(!clase.equals("0 seguro") && velocidad > 2 ){
       peligro = true;
       mensaje = "Conduccion peligrosa";
-    }
-    if(clase.equals("0 seguro")){
+    }else{
       peligro = false;
       mensaje = "Conduccion segura";
     }
@@ -493,7 +492,7 @@ public abstract class CameraActivity extends AppCompatActivity
             Double.toString(location.getLongitude())+"\n"+
             "Velocidad: "+
             Double.toString(Math.round(velocidad*100.0)/100.0)+"\n"+
-            mensaje+"\n"+clase;
+            mensaje;
     locationText.setText(msg);
 
     if(peligro){
@@ -687,7 +686,7 @@ boolean hun = false;
 
 
         try {
-          if (confi>70 ) {
+          if (confi >= 90 ) {
             clase = recognition.getTitle();
             //clases.add(clase);
             //clases.remove(0);
